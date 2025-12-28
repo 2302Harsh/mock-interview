@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import React from 'react'
 
 function Header() {
@@ -8,7 +9,9 @@ function Header() {
         <div className="size-7 rounded-full bg-gradient-to-br from-violet-500 to-pink-500" />
         <h1 className="text-base font-bold md:text-2xl">Mock Interview</h1>
       </div>
-      <Button>Get Started</Button>
+      <Link href={'/dashboard'}>
+        <Button>Get Started</Button>
+      </Link>
     </nav>
   )
 }

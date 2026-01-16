@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import ImageKit from "imagekit";
 import axios from "axios";
+import { aj } from "@/util/arcjet";
+import { currentUser } from "@clerk/nextjs/server";
 
 export const imagekit = new ImageKit({
     publicKey: process.env.IMAGEKIT_URL_PUBLIC_KEY!,
@@ -11,10 +13,23 @@ export const imagekit = new ImageKit({
 export async function POST(req: NextRequest) {
 
     try {
+        const user=await currentUser()
         const formData = await req.formData();
         const file = formData.get("file") as File;
         const jobTitle = formData.get("jobTitle") as File;
         const jobDescription = formData.get("jobDescription") as File;
+
+        const decision = await aj.protect(req, {userId:user?.primaryEmailAddress?.emailAddress??'',requested: 5})
+        console.log("Arcjet decision", decision);
+
+
+        //@ts-ignore
+        if(decision?.reason?.remaining == 0){
+            return NextResponse.json({
+                status:429,
+                result:'No free credit left, Try again after 24 hours'
+            })
+        }
 
         if (file) {
 
@@ -42,7 +57,8 @@ export async function POST(req: NextRequest) {
 
             return NextResponse.json({
                 questions: result.data?.message?.content?.questions,
-                resumeUrl: uploadPdf?.url
+                resumeUrl: uploadPdf?.url,
+                status:200
             })
         }
         else {

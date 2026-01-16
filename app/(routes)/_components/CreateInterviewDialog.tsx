@@ -43,7 +43,12 @@ function CreateInterviewDialog() {
         formData_?.append('jobDescription',formData?.jobDescription)
         try{
             const res=await axios.post('/api/generate-interview-question', formData_);
-            console.log(res.data)
+            console.log(res.data);
+
+            if(res?.data?.status==429){
+                console.log(res?.data?.result);
+            }
+
             const resp=await saveInterviewQuestion({
                 question:res?.data?.question,
                 resumeUrl:res?.data?.resumeUrl??'',

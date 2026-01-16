@@ -12,11 +12,11 @@ export const SaveInterviewQuestion = mutation({
     handler:async(ctx,args)=>{
         const result = await ctx.db.insert('InterviewSessionTable',{
             interviewQuestion:args.question,
-            resumeUrl:args.resumeUrl,
+            resumeUrl:args.resumeUrl ?? null,
             userId:args.uid,
             status:'draft',
-            jobTitle:args.jobTitle,
-            JobDescription: args.jobDescription
+            jobTitle:args.jobTitle ?? null,
+            JobDescription: args.jobDescription ?? null
         })
     }
 })

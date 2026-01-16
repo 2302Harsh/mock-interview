@@ -35,17 +35,21 @@ function CreateInterviewDialog() {
     }
 
     const onSubmit=async()=>{
-        if(!file) return;
+        
         setLoading(true)
-        const formData=new FormData();
-        formData.append("file",file)
+        const formData_=new FormData();
+        formData_.append("file",file??'');
+        formData_?.append('jobTitle',formData?.jobTitle)
+        formData_?.append('jobDescription',formData?.jobDescription)
         try{
-            const res=await axios.post('/api/generate-interview-question', formData);
+            const res=await axios.post('/api/generate-interview-question', formData_);
             console.log(res.data)
             const resp=await saveInterviewQuestion({
                 question:res?.data?.question,
-                resumeUrl:res?.data?.resumeUrl,
-                uid:userDetail?._id
+                resumeUrl:res?.data?.resumeUrl??'',
+                uid:userDetail?._id,
+                jobTitle:formData?.jobTitle??'',
+                jobDescription:formData?.jobDescription??''
             })
 
             console.log(resp)

@@ -13,33 +13,52 @@ export async function POST(req: NextRequest) {
     try {
         const formData = await req.formData();
         const file = formData.get("file") as File;
+        const jobTitle = formData.get("jobTitle") as File;
+        const jobDescription = formData.get("jobDescription") as File;
 
-        if (!file) {
-            return NextResponse.json({ error: "No file" }, { status: 400 });
+        if (file) {
+
+
+
+            console.log("file", formData)
+
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+
+            const uploadPdf = await imagekit.upload({
+                file: buffer,
+                fileName: file.name || `upload-${Date.now()}.pdf`,
+                isPrivateFile: false,
+                useUniqueFileName: true
+            });
+
+
+
+            const result = await axios.post('http://localhost:5678/webhook/generate-interview-question', {
+                resumeUrl: uploadPdf?.url
+            });
+            console.log(result.data)
+
+
+            return NextResponse.json({
+                questions: result.data?.message?.content?.questions,
+                resumeUrl: uploadPdf?.url
+            })
         }
-
-        console.log("file", formData)
-
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        const uploadPdf = await imagekit.upload({
-            file: buffer,
-            fileName: file.name || `upload-${Date.now()}.pdf`,
-            isPrivateFile: false,
-            useUniqueFileName: true
-        });
-
-        const result=await axios.post('http://localhost:5678/webhook/generate-interview-question',{
-            resumeUrl:uploadPdf?.url
-        });
-        console.log(result.data)
+        else {
+            const result = await axios.post('http://localhost:5678/webhook/generate-interview-question', {
+                resumeUrl: null,
+                jobTitle: jobTitle,
+                jobDescription: jobDescription,
+            });
+            console.log(result.data)
 
 
-        return NextResponse.json({
-            questions:result.data?.message?.content?.questions,
-            resumeUrl:uploadPdf?.url
-        })
+            return NextResponse.json({
+                questions: result.data?.message?.content?.questions,
+                resumeUrl: null
+            })
+        }
 
     }
     catch (error: any) {

@@ -18,6 +18,8 @@ import { Loader2Icon } from 'lucide-react'
 import { useMutation } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { UserDetailContext } from '@/app/context/UserDetailContext'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 
 function CreateInterviewDialog() {
@@ -27,6 +29,7 @@ function CreateInterviewDialog() {
     const [loading,setLoading] = useState(false)
     const {userDetail, setUserDetail} = useContext(UserDetailContext)
     const saveInterviewQuestion=useMutation(api.Interview.SaveInterviewQuestion)
+    const router = useRouter()
     const onHandleInputChange=(field:string, value:string)=>{
         setFormData((prev:any)=>({
             ...prev,
@@ -46,10 +49,11 @@ function CreateInterviewDialog() {
             console.log(res.data);
 
             if(res?.data?.status==429){
+                toast.warning(res?.data?.result)
                 console.log(res?.data?.result);
             }
 
-            const resp=await saveInterviewQuestion({
+            const interviewId=await saveInterviewQuestion({
                 question:res?.data?.question,
                 resumeUrl:res?.data?.resumeUrl??'',
                 uid:userDetail?._id,
@@ -57,7 +61,7 @@ function CreateInterviewDialog() {
                 jobDescription:formData?.jobDescription??''
             })
 
-            console.log(resp)
+            router.push('/interview/'+interviewId)
         }
         catch(e){
             console.log(e)
@@ -91,7 +95,7 @@ function CreateInterviewDialog() {
                     <DialogClose>
                         <Button variant={'outline'}>Cancel</Button>
                     </DialogClose>
-                    <Button onClick={onSubmit} disabled={loading || !file}>
+                    <Button onClick={onSubmit} disabled={loading || !file }>
                         {loading && <Loader2Icon className='animate-spin'/>}Submit</Button>
                 </DialogFooter>
             </DialogContent>
